@@ -116,8 +116,8 @@ Comment:
        License was issued.
 
 Files: *
-Copyright: 2016-2021 Alliance for Open Media
-           2018-2022 Intel Corporation
+Copyright: 2016-2024 Alliance for Open Media
+           2018-2024 Intel Corporation
            2020 Tencent Corporation
            2019 Netflix, Inc.
 License: BSD-3-Clause-Clear
@@ -126,11 +126,28 @@ Files: gstreamer-plugin/gstsvtav1enc.*
 Copyright: 2019-2022 Intel Corporation
 License: LGPL-2.1+
 
-Files: Source/Lib/Common/ASM_SSE2/x86inc.asm
+Files: Source/Lib/ASM_AVX2/itx_hbd.h
+       Source/Lib/ASM_AVX2/itx_lbd.h
+       Source/Lib/ASM_AVX2/itx_avx2.asm
+       Source/Lib/ASM_AVX2/itx16_avx2.asm
+       Source/Lib/ASM_AVX2/mc_avx2.asm
+       Source/Lib/ASM_AVX2/mc16_avx2.asm
+       Source/Lib/ASM_NEON/dav1d_asm.S
+       Source/Lib/ASM_NEON/dav1d_util.S
+       Source/Lib/ASM_NEON/itx.S
+       Source/Lib/ASM_NEON/itx_lbd_neon.h
+Copyright: 2018-2023, VideoLAN and dav1d authors
+           2018-2021, Two Orioles, LLC
+           2015-2018, Janne Grunau
+           2015, Martin Storsjo
+           2021, Matthias Dressel
+License: BSD-2-clause
+
+Files: Source/Lib/ASM_SSE2/x86inc.asm
 Copyright: 2005-2016 x264 project
 License: ISC
 
-Files: Source/Lib/Encoder/Codec/vector.*
+Files: Source/Lib/Codec/vector.*
 Copyright: 2016 Peter Goldsborough
 License: Expat
 
@@ -151,7 +168,7 @@ Copyright: 2007-2013 by Cisco Systems, Inc
 License: Expat
 
 Files: debian/*
-Copyright: 2021-2022 Collabora, Ltd.
+Copyright: 2021-2024 Collabora, Ltd.
 License: BSD-2-clause
 
 License: BSD-2-clause

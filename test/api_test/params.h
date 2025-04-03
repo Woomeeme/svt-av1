@@ -29,7 +29,7 @@
 #include <vector>
 #include "EbSvtAv1Enc.h"
 #include "gtest/gtest.h"
-#include "EbDefinitions.h"
+#include "definitions.h"
 
 using std::vector;
 
@@ -146,7 +146,7 @@ static const vector<uint32_t> invalid_hierarchical_levels = {
  * reference picture list 0 and the reference picture list 1 will contain the
  * same reference picture.
  *
- * Following values are supported and defined in EbDefinitions.h
+ * Following values are supported and defined in definitions.h
  * #define SVT_AV1_PRED_LOW_DELAY_P     0
  * #define SVT_AV1_PRED_LOW_DELAY_B     1
  * #define SVT_AV1_PRED_RANDOM_ACCESS   2
@@ -715,6 +715,7 @@ static const vector<EbCpuFlags> default_use_cpu_flags = {
     EB_CPU_FLAGS_ALL,
 };
 static const vector<EbCpuFlags> valid_use_cpu_flags = {
+#ifdef ARCH_X86_64
     EB_CPU_FLAGS_MMX,
     EB_CPU_FLAGS_SSE,
     EB_CPU_FLAGS_SSE2,
@@ -731,6 +732,9 @@ static const vector<EbCpuFlags> valid_use_cpu_flags = {
     EB_CPU_FLAGS_AVX512PF,
     EB_CPU_FLAGS_AVX512BW,
     EB_CPU_FLAGS_AVX512VL,
+#elif defined(ARCH_AARCH64)
+    EB_CPU_FLAGS_NEON,
+#endif
 };
 static const vector<EbCpuFlags> invalid_use_cpu_flags = {EB_CPU_FLAGS_INVALID};
 
@@ -797,6 +801,34 @@ static const vector<uint32_t> invalid_speed_control_flag = {
 
 // Threads management
 
+#if CLN_LP_LVLS
+#if SVT_AV1_CHECK_VERSION(3, 0, 0)
+/* The level of parallelism the encoder employs (how many threads and pictures
+ * to create). */
+static const vector<uint32_t> default_level_of_parallelism = {
+    0,
+};
+static const vector<uint32_t> valid_level_of_parallelism = {
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    20,
+    40,
+    1000,
+    0xFFFFFFFF,
+};
+static const vector<uint32_t> invalid_level_of_parallelism = {
+    // ...
+};
+#else
 /* The number of logical processor which encoder threads run on. If
  * LogicalProcessors and TargetSocket are not set, threads are managed by
  * OS thread scheduler. */
@@ -823,6 +855,35 @@ static const vector<uint32_t> valid_logical_processors = {
 static const vector<uint32_t> invalid_logical_processors = {
     // ...
 };
+#endif
+#else
+/* The number of logical processor which encoder threads run on. If
+ * LogicalProcessors and TargetSocket are not set, threads are managed by
+ * OS thread scheduler. */
+static const vector<uint32_t> default_logical_processors = {
+    0,
+};
+static const vector<uint32_t> valid_logical_processors = {
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    20,
+    40,
+    1000,
+    0xFFFFFFFF,
+};
+static const vector<uint32_t> invalid_logical_processors = {
+    // ...
+};
+#endif
 
 /* Target socket to run on. For dual socket systems, this can specify which
  * socket the encoder runs on.

@@ -39,7 +39,7 @@ control algorithm to update the internal model and decide on future QPs.
 
 The inputs to the rate control algorithm vary based on the application and rate
 control mode. In the case of VBR mode, the input could be analysis statistics
-from an IPP processing of frames in the look ahead window, or statistics coming
+from motion estimation processing of frames in the look ahead window, or statistics coming
 from previous passes. However, in all cases, the Temporal Dependency Model
 (TPL) data is used to calculate the boosts for frame-level QP assignment, SB QP
 modulation and lambda modulation per block.
@@ -47,7 +47,7 @@ modulation and lambda modulation per block.
 In SVT-AV1, there are different options for VBR encoding based on the
 application requirements. These options range from an adjustable latency
 algorithm (One-pass + adjustable look ahead) for low to medium latency
-applications to a multi-pass algorithm for VOD applications. Having access to
+applications to a two-pass algorithm for VOD applications. Having access to
 more pictures in future, which translates to higher latency, generally helps
 the rate control algorithm, however the performance benefits saturate after a
 long enough lookahead window. The available options are listed below. In
@@ -57,87 +57,62 @@ maintain a constant bitrate in the generated bitstream.
 
 ### One-Pass VBR + Look Ahead
 
-In this mode, the latency is controlled by the size of the look ahead. The CRF
-IPP processing is performed for the frames in the look ahead window and the
+In this mode, the latency is controlled by the size of the look ahead. The motion estimation is performed for the frames in the look ahead window and the
 collected analysis data is used in the rate control algorithm. The default size
 of the look ahead is around 2 mini-GoPs (e.g. 32 frames for the case of a
 five-layer prediction structure), but it can be increased to 120 frames.
 
-### Multi-Pass VBR (CRF IPP first pass + CRF middle pass with same Prediction
-structure as final pass + final VBR pass)
+### Two-Pass VBR
 
-The multi-pass mode can only be used in applications where latency is not a
+The two-pass mode can only be used in applications where latency is not a
 concern. This mode is available only using the SVT-AV1 sample application. This
 mode provides the best BD-rate and rate matching performance. In the first
-pass, the encoder runs in IPP CRF mode with simple prediction modes. The
-collected statistics are stored in memory or file and are passed to the encoder
-in the next pass. The middle pass has the same prediction structure as the
-final pass. Using similar prediction structure helps significantly in rate
-assignment. The data from the first pass is used to estimate the sequence QP
-for the middle pass. Having a middle pass with closer rate to the target rate
-helps in matching the target rate considerably. Finally, the last pass uses the
-data from the previous passes to achieve the best performance. A block diagram
+pass, the encoder runs in the same prediction structure as the
+second pass, but in CRF mode. The collected statistics are stored in memory or file and are passed to the encoder
+in the next pass. Using similar prediction structure helps significantly in rate
+assignment. Having a first pass with closer rate to the target rate
+helps in matching the target rate considerably. The second pass uses the
+data from the previous pass to achieve the best performance. A block diagram
 of the encoder with three passes is shown in Figure 2.
 
 ![rc_figure2](./img/rc_figure2.PNG)
 
-###### Figure 2. Block diagram of multi-pass encoder.
+###### Figure 2. Block diagram of two-pass encoder.
 
 ## VBR Rate Control Flow
 
-### CRF IPP Pass
-
-The IPP pass is used to generate statistics to be used in the final pass in a
-one-pass + LAD encoder or in subsequent passes in a multi-pass encoder. It is a
-simple and fast processing of the source input pictures that is based only on
-the source pictures (i.e. the reference pictures are also source input
-pictures) and makes use of a flat prediction structure where any given picture
-would reference at most the two preceding pictures in display order. Pictures
-are divided into 16x16 blocks and simple ME and Intra DC predictions are
-performed. The inter and intra prediction residuals are used in the
-calculations of the prediction distortion but not processed through
-transform/quantization steps. The collected data includes: Intra error
-(distortion), Inter error (distortion), coded error (distortion) of the best
-mode, percentage of Inter blocks, percentage of zero motion blocks, and
-information about motion vectors. The coded error of each mini-GoP or GoP is
-used in the final pass to allocate the rate for each section of the clip. Note
-that the results from the IPP pass can be used in other decision-making steps,
-such as the dynamic GoP decisions, in the subsequent encode pass. The
-calculated data is stored in *FRAME_STATS* per block and then converted to
-*FIRSTPASS_STATS* per frame in *update_firstpass_stats()*.
-
-### Middle-Pass: CRF Encoding based on the Final Prediction Structure
+### First-Pass: CRF Encoding based on the second Prediction Structure
 
 A robust rate control would require accurate statistical information to
 properly distribute the rate budget and meet the constraints imposed by the
-application. Even though the IPP pass provides useful information for the
+application. Even though an IPP pass provides useful information for the
 subsequent encode passes, the corresponding statistics are not accurate enough
-to make good rate distribution decisions in the final encode pass. Using a CRF
-pass with the same prediction structure as the final pass provides accurate
-enough estimates upon which to base the final encoding pass rate control
-decisions. This newly added middle pass is a fast version of the final pass
-with similar prediction structure as the final pass. In order to improve the
-accuracy of information, we use the statistics from the IPP pass to estimate
-the input QP of the Middle-Pass to get closer to the target rate. This process
-results in substantially better rate matching in the multi pass rate control.
-The middle pass stores the following data per frame (See StatStruct structure):
+to make good rate distribution decisions in the second encode pass. Using a CRF
+pass with the same prediction structure as the second pass provides accurate
+enough estimates upon which to base the second encoding pass rate control
+decisions. This pass is a fast version of the second pass
+with similar prediction structure as the second pass. In order to improve the
+accuracy of information, we use the input size, frame rate and the target rate to estimate
+the input QP of the first-Pass to get closer to the target rate. This process
+results in substantially better rate matching in the two pass rate control.
+The first pass stores the following data per frame (See StatStruct structure):
 Picture number, total number of bits, qindex for the frame, qindex for the
 sequence.
 
-In order to reduce the speed overhead of the middle pass, a faster preset of
-the encoder is considered in the middle pass. For example, if the final pass
-preset is set to M5, the preset of the middle pass is chosen to be M11. To make
-the middle pass even faster, some additional speed optimizations are considered
+In order to reduce the speed overhead of the first pass, a faster preset of
+the encoder is considered in the first pass. For example, if the second pass
+preset is set to M5, the preset of the first pass is chosen to be M11. To make
+the first pass even faster, some additional speed optimizations are considered
 and are briefly described in Appendix B.
 
-### Final Pass
+### Second Pass
 
 The following presents a very high-level description of the steps involved in
-the rate control algorithm in the final encode pass. The flowchart is shown in
+the rate control algorithm in the second encode pass. The flowchart is shown in
 Figure 3. A more detailed presentation of these steps is provided in the next
 section.
 
-The rate control algorithm in the final pass includes the following main steps:
+The rate control algorithm in the second pass includes the following main steps:
 1) For each GoP/KF_group assign the target number of bits (*kf_group_rate_assingment()*).
 2) For each mini-GoP or GF_group assign the target number of bits per frame (*gf_group_rate_assingment()*).
 3) Update the target number of bits per frame based on the feedback and internal buffers (*av1_set_target_rate()*).
@@ -148,12 +123,12 @@ The rate control algorithm in the final pass includes the following main steps:
 
 ![rc_figure3](./img/rc_figure3.PNG)
 
-###### Figure 3. Flowchart of rate control in the final pass.
+###### Figure 3. Flowchart of rate control in the second pass.
 
-## Final Pass RC Algorithm in Detail
+## second Pass RC Algorithm in Detail
 
 This section provides a more detailed description of the main steps involved in
-the Final Pass RC algorithm
+the second Pass RC algorithm
 
 ### GoP-level Bit Assignment (get_kf_group_bits())
 
@@ -180,10 +155,9 @@ where:
 - *kf_group_err* is the calculated error for the GoP as the sum of frame errors in the GoP.
 - *modified_error_left* is the calculated error over the remaining frames in the clip.
 
-In the above definitions, error is defined as function of the best Inter vs.
-Intra error from the first pass.
+In the above definitions, error is defined as function of the motion estimation error for each frame.
 
-#### Multi-Pass VBR:
+#### Two-Pass VBR:
 
 In this case, the error is replaced by the actual number of bits in the previous pass.
 
@@ -205,10 +179,9 @@ ___GF_group_bits = kf_bits_left * (GF_group_err / kf_error_left)___
 *kf_bits_left* refers to the remaining bit budget in the GoP. *GF_group_err* is
 the calculated error for the gf group as the sum of frame errors in the gf
 group and *kf_error_left* is the calculated error for the remaining frames in
-the GoP. Error is defined as a function of the best inter vs. intra error from
-the first pass for the mini-GoP.
+the GoP. Error is defined as a function of the motion estimation error for each frame in the mini-GoP.
 
-#### Multi-Pass
+#### Two-Pass
 
 In this case, the error is replaced by the actual number of bits in the previous pass.
 
@@ -237,7 +210,7 @@ layer frames, the boost factor is used as a factor to adjust the number of
 bits, where frames with higher boost factor are assigned higher bits
 (*calculate_boost_bits()*).
 
-#### Multi-Pass
+#### Two-Pass
 
 In this case, the actual rate data of each picture from the preceding pass is
 used to calculate the bit budget per frame as follows:
@@ -274,8 +247,8 @@ the target bit allocation for a given frame, it is now desired to find a qindex
 to use with the frame that would result in an encoded frame size that is as
 close as possible to the allocated number of bits for the frame. To achieve
 this objective, a range of candidate qindex values is first defined based on
-data from TPL, state of the rate control buffers and statistics from the IPP
-pass and possibly the middle pass when applicable. Using predefined lookup
+data from TPL, state of the rate control buffers and statistics from the first
+pass. Using predefined lookup
 tables that relate qindex information to encoding bits, the qindex that yields
 the best matching rate is selected for the frame.
 
@@ -636,14 +609,14 @@ data from PCS to/from internal data structures like RATE_CONTROL, TWO_PASS and
 GF_GROUP. These functions were added to handle the frame-level parallelism and
 out-of-order encoding characteristics of the SVT encoder.
 
-## Appendix B: Speed Optimization of the Middle Pass
+## Appendix B: Speed Optimization of the firt Pass
 
-To make the middle pass even faster, the following speed optimizations are done:
-- The input video is down-sampled by two in each direction and the middle pass
+To make the first pass even faster, the following speed optimizations are done:
+- The input video is down-sampled by two in each direction and the first pass
   is performed on a smaller resolution of the input video. Down-sampling
   results in a significant encoder speed up.
-- Since the middle pass does not output a conformant stream, the encoding of
-  non-reference frames is by-passed to speed up the middle pass encoding.
+- Since the first pass does not output a conformant stream, the encoding of
+  non-reference frames is by-passed to speed up the first pass encoding.
 
 ## Appendix C: Capped CRF
 
@@ -686,7 +659,7 @@ is currently supported with VBR mode when GoP size is 120 frames or more.
 ## Notes
 
 The feature settings that are described in this document were compiled at
-v1.7.0 of the code and may not reflect the current status of the code. The
+v2.2.0 of the code and may not reflect the current status of the code. The
 description in this document represents an example showing how features would
 interact with the SVT architecture. For the most up-to-date settings, it's
 recommended to review the section of the code implementing this feature.

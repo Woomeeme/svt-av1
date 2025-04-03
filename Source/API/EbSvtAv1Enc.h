@@ -28,7 +28,7 @@ extern "C" {
  * has been modified, and reset anytime the major API version has
  * been changed. Used to keep track if a field has been added or not.
  */
-#define SVT_AV1_ENC_ABI_VERSION 8
+#define SVT_AV1_ENC_ABI_VERSION 0
 
 //***HME***
 
@@ -174,7 +174,7 @@ typedef enum EbSFrameMode {
 } EbSFrameMode;
 
 /* Indicates what prediction structure to use
- * was PredStructure in EbDefinitions.h
+ * was PredStructure in definitions.h
  * Only SVT_AV1_PRED_LOW_DELAY_B and SVT_AV1_PRED_RANDOM_ACCESS are valid
  */
 typedef enum SvtAv1PredStructure {
@@ -435,7 +435,7 @@ typedef struct EbSvtAv1EncConfiguration {
     /* Target bitrate in bits/second, only applicable when rate control mode is
      * set to 1 (VBR) or 2 (CBR).
      *
-     * Default is 2000000. */
+     * Default is 2000513. */
     uint32_t target_bit_rate;
     /* maximum bitrate in bits/second, only apllicable when rate control mode is
      * set to 0.
@@ -454,13 +454,14 @@ typedef struct EbSvtAv1EncConfiguration {
      * Default is 63. */
     uint32_t max_qp_allowed;
     /* Minimum QP value allowed for rate control use, only applicable when rate
-     * control mode is set to 1. It has to be smaller or equal to maxQpAllowed.
+     * control mode is set to 1 or 2. It has to be smaller or equal to maxQpAllowed.
      *
-     * Default is 0. */
+     * Default is 4. */
     uint32_t min_qp_allowed;
 
     // DATARATE CONTROL OPTIONS
-
+#if !SVT_AV1_CHECK_VERSION(2, 0, 0)
+    /* DEPRECATED: to be removed in 2.0.0. */
     /**
      * @brief Variable Bit Rate Bias Percentage
      *
@@ -473,6 +474,7 @@ typedef struct EbSvtAv1EncConfiguration {
      * Default is 100
      */
     uint32_t vbr_bias_pct;
+#endif
 
     /**
      * @brief Variable Bit Rate Minimum Section Percentage
@@ -508,7 +510,7 @@ typedef struct EbSvtAv1EncConfiguration {
      *
      * Min is 0.
      * Max is 100.
-     * Default is 25.
+     * Default is 25 for CBR and 50 for VBR.
      */
     uint32_t under_shoot_pct;
 
@@ -629,7 +631,8 @@ typedef struct EbSvtAv1EncConfiguration {
     *
     * 0 is no denoising
     * 1 is full denoising
-    */
+    *
+    * Default is 0. */
     uint8_t film_grain_denoise_apply;
 
     /* CDEF Level
@@ -737,11 +740,11 @@ typedef struct EbSvtAv1EncConfiguration {
     int32_t manual_pred_struct_entry_num;
 #endif
     /* Decoder-speed-targeted encoder optimization level (produce bitstreams that can be decoded faster).
-    * 0: No decoder speed optimization
-    * 1: Decoder speed optimization enabled (fast decode)
+    * 0: No decoder-targeted speed optimization
+    * 1: Level 1 of decoder-targeted speed optimizations (faster decoder-speed than level 0)
+    * 2: Level 2 of decoder-targeted speed optimizations (faster decoder-speed than level 1)
     */
-    Bool fast_decode;
-
+    uint8_t fast_decode;
     /* S-Frame interval (frames)
     * 0: S-Frame off
     * >0: S-Frame on and indicates the number of frames after which a frame may be coded as an S-Frame
@@ -778,6 +781,31 @@ typedef struct EbSvtAv1EncConfiguration {
 
     // Threads management
 
+#if CLN_LP_LVLS
+#if !SVT_AV1_CHECK_VERSION(3, 0, 0)
+    /* logical_processors refers to how much parallelization the encoder will perform
+     * by setting the number of threads and pictures that can be handled simultaneously. If
+     * the value is 0, a deafult level will be chosen based on the number of cores on the
+     * machine. Levels 1-6 are supported. Beyond that, higher inputs
+     * will map to the highest level.
+     */
+    uint32_t logical_processors;
+#endif
+
+    /* The level of parallelism refers to how much parallelization the encoder will perform
+     * by setting the number of threads and pictures that can be handled simultaneously. If
+     * the value is 0, a deafult level will be chosen based on the number of cores on the
+     * machine. Levels 1-6 are supported. Beyond that, higher inputs
+     * will map to the highest level.
+     */
+    uint32_t level_of_parallelism;
+
+    /* Pin the execution of threads to the first N logical processors.
+     * 0: unpinned
+     * N: Pin threads to socket's first N processors
+     * default 0 */
+    uint32_t pin_threads;
+#else
     /* The number of logical processor which encoder threads run on. If
      * LogicalProcessors and TargetSocket are not set, threads are managed by
      * OS thread scheduler. */
@@ -790,6 +818,7 @@ typedef struct EbSvtAv1EncConfiguration {
     * 0: unpinned
     * default 0 */
     uint32_t pin_threads;
+#endif
 
     /* Target socket to run on. For dual socket systems, this can specify which
      * socket the encoder runs on.
@@ -920,14 +949,43 @@ typedef struct EbSvtAv1EncConfiguration {
      */
     SvtAv1FrameScaleEvts frame_scale_evts;
 
-    /*Add 64 Byte Padding to Struct to avoid changing the size of the public configuration struct*/
     /* ROI map
     *
     * 0 = disable ROI
     * 1 = enable ROI
     *  Default is 0. */
-    Bool    enable_roi_map;
-    uint8_t padding[64 - sizeof(Bool)];
+    Bool enable_roi_map;
+
+    /* Stores the optional film grain synthesis info */
+    AomFilmGrain *fgs_table;
+
+    /* New parameters can go in under this line. Also deduct the size of the parameter */
+    /* from the padding array */
+
+    /* Variance boost
+     * false = disable variance boost
+     * true = enable variance boost
+     * Default is false. */
+    Bool enable_variance_boost;
+
+    /* @brief Selects the curve strength to boost low variance regions according to a fast-growing formula
+     * Default is 2 */
+    uint8_t variance_boost_strength;
+
+    /* @brief Picks a set of eight 8x8 variance values per superblock to determine boost
+     * Lower values enable detecting more blocks that need boosting, at the expense of more possible false positives (overall bitrate increase)
+     *  1: 1st octile
+     *  4: 4th octile
+     *  8: 8th octile
+     *  Default is 6 */
+    uint8_t variance_octile;
+
+    /*Add 128 Byte Padding to Struct to avoid changing the size of the public configuration struct*/
+#if CLN_LP_LVLS
+    uint8_t padding[128 - sizeof(Bool) - 2 * sizeof(uint8_t) - sizeof(uint32_t)];
+#else
+    uint8_t padding[128 - sizeof(Bool) - 2 * sizeof(uint8_t)];
+#endif
 
 } EbSvtAv1EncConfiguration;
 
@@ -1001,12 +1059,16 @@ EB_API EbErrorType svt_av1_enc_stream_header_release(EbBufferHeaderType *stream_
      * @ *p_buffer           Header pointer, picture buffer. */
 EB_API EbErrorType svt_av1_enc_send_picture(EbComponentType *svt_enc_component, EbBufferHeaderType *p_buffer);
 
-/* STEP 5: Receive packet.
-     * Parameter:
-    * @ *svt_enc_component  Encoder handler.
-     * @ **p_buffer          Header pointer to return packet with.
-     * @ pic_send_done       Flag to signal that all input pictures have been sent, this call becomes locking one this signal is 1.
-     * Non-locking call, returns EB_ErrorMax for an encode error, EB_NoErrorEmptyQueue when the library does not have any available packets.*/
+/**
+ * @brief Step 5: Receive packet.
+ * This function will become blocking if either pic_send_done is set to 1 or if we are in low-delay (pred-struct=1).
+ * Otherwise, this function is non-blocking and will return EB_NoErrorEmptyQueue if there are no packets available.
+ *
+ * @param svt_enc_component The encoder handler
+ * @param p_buffer Header pointer to return packet with
+ * @param pic_send_done Flag to signal that all input pictures have been sent. Should be either 0 or 1.
+ * @return EB_API Either EB_ErrorMax for an encode error or EB_NoErrorEmptyQueue if there are no available packets.
+ */
 EB_API EbErrorType svt_av1_enc_get_packet(EbComponentType *svt_enc_component, EbBufferHeaderType **p_buffer,
                                           uint8_t pic_send_done);
 

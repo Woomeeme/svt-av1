@@ -13,7 +13,7 @@ stream for the decoder to reproduce the noise and add it in the
 reconstructed pictures. A block diagram showing the main components of
 the feature is included in Figure 1 below.
 
-![film_grain_fig1](./img/film_grain_fig1.png)
+![film_grain_fig1](./img/film_grain_fig1.svg)
 
 ##### Figure 1. Block diagram of the film grain modeling process.
 
@@ -102,7 +102,7 @@ For luma, re-noising is performed on 32x32 basis by
 
 A similar operation is performed for the collocated 16x16 chroma blocks.
 
-![film_grain_fig2](./img/film_grain_fig2.png)
+![film_grain_fig2](./img/film_grain_fig2.svg)
 
 ##### Figure 2. Example of film grain noise template.
 
@@ -139,7 +139,7 @@ The control flags for the film grain feature are summarized in Table 1.
 The main function calls associated with the film grain parameter
 estimation are included in Figure 3 below.
 
-![film_grain_fig3](./img/film_grain_fig3.png)
+![film_grain_fig3](./img/film_grain_fig3.svg)
 
 ##### Figure 3. Main function calls associated with the film grain model parameter estimation process.
 
@@ -271,7 +271,7 @@ to the bitstream.
 ## Notes
 
 The feature settings that are described in this document were compiled at
-v1.7.0 of the code and may not reflect the current status of the code. The
+v2.2.0 of the code and may not reflect the current status of the code. The
 description in this document represents an example showing how features would
 interact with the SVT architecture. For the most up-to-date settings, it's
 recommended to review the section of the code implementing this feature.

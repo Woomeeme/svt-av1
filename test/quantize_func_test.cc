@@ -17,19 +17,11 @@
 #include "random.h"
 #include "util.h"
 
-// workaround to eliminate the compiling warning on linux
-// The macro will conflict with definition in gtest.h
-#ifdef __USE_GNU
-#undef __USE_GNU  // defined in EbThreads.h
-#endif
-#ifdef _GNU_SOURCE
-#undef _GNU_SOURCE  // defined in EbThreads.h
-#endif
-#include "EbDefinitions.h"
-#include "EbPictureControlSet.h"
-#include "EbTransforms.h"
-#include "EbUnitTestUtility.h"
-#include "EbQMatrices.h"
+#include "definitions.h"
+#include "pcs.h"
+#include "transforms.h"
+#include "unit_test_utility.h"
+#include "q_matrices.h"
 
 namespace {
 using svt_av1_test_tool::SVTRandom;
@@ -475,6 +467,7 @@ class QuantizeHbdTest : public QuantizeTest<QuantizeHbdParam, QuantizeHbdFunc> {
         }
     }
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(QuantizeHbdTest);
 
 TEST_P(QuantizeHbdTest, ZeroInput) {
     FillCoeffZero();
@@ -735,6 +728,7 @@ class QuantizeQmTest : public QuantizeTest<QuantizeQmParam, QuantizeQmFunc> {
     const QmVal *qmatrix_[NUM_QM_LEVELS][3][TX_SIZES_ALL];
     int qm_level_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(QuantizeQmTest);
 
 TEST_P(QuantizeQmTest, ZeroInput) {
     FillCoeffZero();
@@ -769,6 +763,7 @@ TEST_P(QuantizeQmTest, CoeffHalfDequant) {
 }
 
 using QuantizeQmHbdTest = QuantizeQmTest;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(QuantizeQmHbdTest);
 
 TEST_P(QuantizeQmHbdTest, ZeroInput) {
     FillCoeffZero();
@@ -803,6 +798,8 @@ TEST_P(QuantizeQmHbdTest, CoeffHalfDequant) {
 }
 
 using std::make_tuple;
+
+#ifdef ARCH_X86_64
 
 #if HAS_AVX2
 const QuantizeParam kQParamArrayAvx2[] = {
@@ -966,46 +963,101 @@ const QuantizeQmParam kQmParamHbdArrayAvx2[] = {
                &svt_av1_highbd_quantize_fp_qm_avx2,
                static_cast<TxSize>(TX_8X32), TYPE_FP, EB_TEN_BIT)};
 
-INSTANTIATE_TEST_CASE_P(AVX2, QuantizeLbdTest,
-                        ::testing::ValuesIn(kQParamArrayAvx2));
-INSTANTIATE_TEST_CASE_P(SSE4_1, QuantizeHbdTest,
-                        ::testing::ValuesIn(kQHbdParamArraySse41));
-INSTANTIATE_TEST_CASE_P(AVX2, QuantizeHbdTest,
-                        ::testing::ValuesIn(kQHbdParamArrayAvx2));
-INSTANTIATE_TEST_CASE_P(AVX2, QuantizeQmTest,
-                        ::testing::ValuesIn(kQmParamArrayAvx2));
-INSTANTIATE_TEST_CASE_P(AVX2, QuantizeQmHbdTest,
-                        ::testing::ValuesIn(kQmParamHbdArrayAvx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, QuantizeLbdTest,
+                         ::testing::ValuesIn(kQParamArrayAvx2));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, QuantizeHbdTest,
+                         ::testing::ValuesIn(kQHbdParamArraySse41));
+INSTANTIATE_TEST_SUITE_P(AVX2, QuantizeHbdTest,
+                         ::testing::ValuesIn(kQHbdParamArrayAvx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, QuantizeQmTest,
+                         ::testing::ValuesIn(kQmParamArrayAvx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, QuantizeQmHbdTest,
+                         ::testing::ValuesIn(kQmParamHbdArrayAvx2));
+#endif  // HAS_AVX2
+#endif  // ARCH_X86_64
 
-TEST(ComputeCulLevel, avx2) {
-    SVTRandom rnd(0, (1 << 10) - 1);
-    const int max_size = 100 * 100;
-    // scan[] is a set of indexes for quant_coeff[]
-    int16_t scan[max_size];
-    int32_t quant_coeff[max_size];
-    uint16_t eob_ref, eob_mod;
+#ifdef ARCH_AARCH64
+const QuantizeParam kQParamArrayNeon[] = {
+    make_tuple(&svt_av1_quantize_fp_c, &svt_av1_quantize_fp_neon,
+               static_cast<TxSize>(TX_16X16), TYPE_FP, EB_EIGHT_BIT),
+    make_tuple(&svt_av1_quantize_fp_c, &svt_av1_quantize_fp_neon,
+               static_cast<TxSize>(TX_4X16), TYPE_FP, EB_EIGHT_BIT),
+    make_tuple(&svt_av1_quantize_fp_c, &svt_av1_quantize_fp_neon,
+               static_cast<TxSize>(TX_16X4), TYPE_FP, EB_EIGHT_BIT),
+    make_tuple(&svt_av1_quantize_fp_c, &svt_av1_quantize_fp_neon,
+               static_cast<TxSize>(TX_32X8), TYPE_FP, EB_EIGHT_BIT),
+    make_tuple(&svt_av1_quantize_fp_c, &svt_av1_quantize_fp_neon,
+               static_cast<TxSize>(TX_8X32), TYPE_FP, EB_EIGHT_BIT),
+    make_tuple(&svt_av1_quantize_fp_32x32_c, &svt_av1_quantize_fp_32x32_neon,
+               static_cast<TxSize>(TX_32X32), TYPE_FP, EB_EIGHT_BIT),
+    make_tuple(&svt_av1_quantize_fp_32x32_c, &svt_av1_quantize_fp_32x32_neon,
+               static_cast<TxSize>(TX_16X64), TYPE_FP, EB_EIGHT_BIT),
+    make_tuple(&svt_av1_quantize_fp_32x32_c, &svt_av1_quantize_fp_32x32_neon,
+               static_cast<TxSize>(TX_64X16), TYPE_FP, EB_EIGHT_BIT),
+    make_tuple(&svt_av1_quantize_fp_64x64_c, &svt_av1_quantize_fp_64x64_neon,
+               static_cast<TxSize>(TX_64X64), TYPE_FP, EB_EIGHT_BIT)};
 
-    scan[0] = 0;
+INSTANTIATE_TEST_SUITE_P(NEON, QuantizeLbdTest,
+                         ::testing::ValuesIn(kQParamArrayNeon));
+#endif  // ARCH_AARCH64
 
-    for (int test = 0; test < 1000; test++) {
-        // Every 50 iteration randomize buffers
-        if (!(test % 50))
-            for (uint32_t i = 0; i < max_size; i++) {
-                quant_coeff[i] = rnd.random();
-                if (i != 0)
-                    scan[i] = rnd.random() % max_size;
-            }
+using ComputeCulLevelFunc = uint8_t (*)(const int16_t *const scan,
+                                        const int32_t *const quant_coeff,
+                                        uint16_t *eob);
 
-        eob_ref = eob_mod = rnd.random() % max_size;
-
-        int32_t ref = svt_av1_compute_cul_level_c(scan, quant_coeff, &eob_ref);
-        int32_t mod =
-            svt_av1_compute_cul_level_avx2(scan, quant_coeff, &eob_mod);
-
-        EXPECT_TRUE(ref == mod);
-        EXPECT_TRUE(eob_ref == eob_mod);
+class ComputeCulLevelTest
+    : public ::testing::TestWithParam<ComputeCulLevelFunc> {
+  public:
+    ComputeCulLevelTest() : test_func_(GetParam()) {
     }
+
+    void test_match() {
+        SVTRandom rnd(0, (1 << 10) - 1);
+        SVTRandom quant_rnd(-10, 10);
+        const int max_size = 50;
+        // scan[] is a set of indexes for quant_coeff[]
+        int16_t scan[max_size];
+        int32_t quant_coeff[max_size];
+        uint16_t eob_ref, eob_test;
+
+        scan[0] = 0;
+
+        for (int test = 0; test < 1000; test++) {
+            // Every 50 iteration randomize buffers
+            if (!(test % 50))
+                for (uint32_t i = 0; i < max_size; i++) {
+                    quant_coeff[i] = quant_rnd.random();
+                    if (i != 0)
+                        scan[i] = rnd.random() % max_size;
+                }
+
+            eob_ref = eob_test = rnd.random() % max_size;
+
+            int32_t ref_res =
+                svt_av1_compute_cul_level_c(scan, quant_coeff, &eob_ref);
+
+            int32_t test_res = test_func_(scan, quant_coeff, &eob_test);
+
+            EXPECT_EQ(ref_res, test_res);
+            EXPECT_EQ(eob_ref, eob_test);
+        }
+    }
+
+  private:
+    ComputeCulLevelFunc test_func_;
+};
+
+TEST_P(ComputeCulLevelTest, test_match) {
+    test_match();
 }
 
-#endif  // HAS_AVX2
+#ifdef ARCH_X86_64
+INSTANTIATE_TEST_SUITE_P(AVX2, ComputeCulLevelTest,
+                         ::testing::Values(svt_av1_compute_cul_level_avx2));
+#endif  // ARCH_X86_64
+
+#ifdef ARCH_AARCH64
+INSTANTIATE_TEST_SUITE_P(NEON, ComputeCulLevelTest,
+                         ::testing::Values(svt_av1_compute_cul_level_neon));
+#endif  // ARCH_AARCH64
 }  // namespace

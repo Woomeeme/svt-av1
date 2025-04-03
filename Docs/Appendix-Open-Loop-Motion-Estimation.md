@@ -203,7 +203,7 @@ performed on a per-SB basis after HME (before ME) and after ME (so that
 candidates will not be passed to MD). Pruning decisions are based on the
 relative SAD of each reference frame (relative to the best SAD), as follows:
 
-$\frac{`Curr\_frame\_SAD - Best\_frame\_SAD`}{Best\_frame\_SAD}>TH$
+$`\frac{`Curr\_frame\_SAD - Best\_frame\_SAD`}{Best\_frame\_SAD}>TH`$
 
 Reference pruning controls are set in ```set_me_hme_ref_prune_ctrls()```, with
 the following controls:
@@ -226,7 +226,7 @@ optimizations.
 ## Notes
 
 The feature settings that are described in this document were compiled at
-v1.7.0 of the code and may not reflect the current status of the code. The
+v2.2.0 of the code and may not reflect the current status of the code. The
 description in this document represents an example showing how features would
 interact with the SVT architecture. For the most up-to-date settings, it's
 recommended to review the section of the code implementing this feature.

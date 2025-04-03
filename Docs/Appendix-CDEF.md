@@ -33,7 +33,7 @@ The two steps are outlined in more detail in the following section.
 could be considered. The directions are indexed with d=0,…,7 as
 indicated in Figure 1 below.
 
-![image24](./img/image24.png)
+![image24](./img/image24.svg)
 
 ##### Figure 1. Block directions.
 
@@ -57,7 +57,7 @@ The example in Figure 2 below illustrates this step for an 8x8 input block. In t
 example, direction 0 has the smallest error variance and is selected as the block
 direction.
 
-![image25](./img/image25.png)
+![image25](./img/image25.svg)
 
 ##### Figure 2. Example of block direction identification.
 
@@ -72,7 +72,7 @@ During secondary filtering of the red sample the eight blue samples
 located at a $`45^o`$ angle from the block direction
 are considered.
 
-![image26](./img/image26.png)
+![image26](./img/image26.svg)
 
 ##### Figure 3. Example of primary and secondary filtering directions.
 
@@ -101,7 +101,7 @@ damping values. The filter weights for primary filtering are shown in
 Figure 4 below. The sample to be filtered is shown in blue. For even
 strengths, a = 2 and b = 4, whereas for odd strengths a = 3 and b = 3.
 
-![image27](./img/image27.png)
+![image27](./img/image27.svg)
 
 ##### Figure 4. Filter weights for primary filtering.
 
@@ -112,7 +112,7 @@ The filter weights for secondary filtering are indicated in Figure 5
 below as a function of the block direction. The sample to be filtered is
 shown in blue.
 
-![image28](./img/image28.png)
+![image28](./img/image28.svg)
 
 ##### Figure 5. Filter weights for secondary filtering.
 
@@ -137,13 +137,6 @@ Control flags associated with CDEF are listed in Table 1 below.
 
 **Implementation details**
 
-Important function calls associated with CDEF are highlighted in Figure 6 below. The function calls are
-organized according to the depth of the function call.
-
-![image29](./img/image29.png)
-
-##### Figure 6. The main function calls associated with CDEF.
-
 The main steps involved in the implementation of the algorithm are
 outlined below, followed by more details on some of the important
 functions.
@@ -151,8 +144,8 @@ functions.
 Step 1: Split the frame to be filtered into segments to allow for parallel filtering operations on
   different parts of the frame. The segments are set according to the following rules
   (see ```load_default_buffer_configuration_settings``` in ```EbEncHandle.c```):
-- The number of segment rows is set to 1 if ```(luma height/64)<6```, else it is set to 6.
-- The number of segment columns is set to 1 if ```(luma width/64)<10```, else it is set to 6.
+- The number of segment rows is set to 1 if using a single core or ```(luma height/64)<6```, else it is set to 6.
+- The number of segment columns is set to 1 if using a single core or ```(luma width/64)<10```, else it is set to 6.
 
 The segments are processed in ```cdef_kernel```. Each segment is split into
 64x64 filter blocks.
@@ -405,7 +398,7 @@ signaled at the filter block level.
 ## Notes
 
 The feature settings that are described in this document were compiled at
-v1.7.0 of the code and may not reflect the current status of the code. The
+v2.2.0 of the code and may not reflect the current status of the code. The
 description in this document represents an example showing how features would
 interact with the SVT architecture. For the most up-to-date settings, it's
 recommended to review the section of the code implementing this feature.

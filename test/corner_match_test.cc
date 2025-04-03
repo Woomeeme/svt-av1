@@ -13,10 +13,10 @@
 #include <stdlib.h>
 #include "gtest/gtest.h"
 #include "aom_dsp_rtcd.h"
-#include "EbDefinitions.h"
+#include "definitions.h"
 #include "random.h"
 #include "util.h"
-#include "EbUnitTestUtility.h"
+#include "unit_test_utility.h"
 #include "acm_random.h"
 #include "corner_match.h"
 
@@ -155,7 +155,7 @@ TEST_P(AV1CornerMatchTest, DISABLED_Speed) {
     RunCheckOutput(1000);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AV1CornerMatchTest, AV1CornerMatchTest,
     ::testing::Values(make_tuple(0, &svt_av1_compute_cross_correlation_sse4_1),
                       make_tuple(1, &svt_av1_compute_cross_correlation_sse4_1),

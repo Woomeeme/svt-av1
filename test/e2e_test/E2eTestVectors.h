@@ -24,7 +24,7 @@
 
 #include <map>
 #include "VideoSource.h"
-#include "EbDefinitions.h"
+#include "definitions.h"
 #include "ConfigEncoder.h"
 
 /** @defgroup svt_av1_e2e_test_vector Test vectors for E2E test
@@ -230,7 +230,7 @@ typedef struct EncTestSetting {
                                     const EncTestSetting& setting) {
         return os << setting.get_setting_str();
     }
-    // used in INSTANTIATE_TEST_CASE_P to append the param info into the test
+    // used in INSTANTIATE_TEST_SUITE_P to append the param info into the test
     // name
     static std::string GetSettingName(
         const ::testing::TestParamInfo<EncTestSetting> setting) {

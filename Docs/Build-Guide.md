@@ -1,21 +1,23 @@
 [Top level](../README.md)
 
 # Build and Install
+Before building, please consider **enabling** link-time optimizations (LTO), which will build a binary with reduced call and return overhead due to the increased inline expansion. In order for effective LTO generated inline expansion to occur, additional time to process the source files is needed, and so may affect your overall compile time.
 
 ## Windows* Operating Systems (64-bit)
 
 - __Build Requirements__
   - Visual Studio* 2017 (download [here](https://www.visualstudio.com/vs/older-downloads/)) or 2019 (download [here](https://visualstudio.microsoft.com/downloads/))
   - CMake 3.16 or later (download [here](https://github.com/Kitware/CMake/releases/download/v3.24.2/cmake-3.24.2-windows-x86_64.msi))
-  - YASM Assembler version 1.2.0 or later
-    - Download the yasm exe from the following [link](http://www.tortall.net/projects/yasm/releases/yasm-1.3.0-win64.exe)
-    - Rename yasm-*-win64.exe to yasm.exe
-    - Copy yasm.exe into a location that is in the `PATH` environment variable
+  - NASM Assembler version 2.14 or later
+    - Download the nasm exe from the following [link](https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-win64.zip)
+    - Extract the archive
+    - Copy nasm.exe into a location that is in the `PATH` environment variable
 
 - __Build Instructions__
   - Build the project by following the steps below
     - cd into `Build\windows`
     - run `build.bat <2019|2017|2015>` [This will generate the .sln files and build the project]
+    - for LTO build run `build.bat <2019|2017|2015> lto` [This will generate the .sln files and build the project]
 
 - __Binaries Location__
   - Binaries can be found under `<repo dir>/Bin/Release` or `<repo dir>/Bin/Debug`, depending on whether Debug or Release were selected in the build mode.
@@ -35,11 +37,14 @@ Note - a Dockerfile is provided to build the encoder into a tiny Alpine Linux Do
 - __Build Requirements__
   - GCC 5.4.0 or later
   - CMake 3.16 or later
-  - YASM Assembler version 1.2.0 or later
+  - NASM Assembler version 2.14 or later
 
 - __Build Instructions__
   - `cd Build/linux`
   - `./build.sh <release | debug>`
+  - for an LTO build, run `./build.sh <release | debug> --enable-lto`
+  - for a PGO build, run `./build.sh <release | debug> --enable-pgo`
+    (LTO and PGO can be combined, for maximum gains)
 
 - __Sample Binaries location__
   - Binaries can be found under `Bin/Release` and/or `Bin/Debug`
@@ -64,7 +69,7 @@ Note - a Dockerfile is provided to build the encoder into a tiny Alpine Linux Do
   - Change the permissions on the sample application `SvtAV1EncApp` executable by running the command: `chmod +x SvtAv1EncApp`
   - cd into your chosen location
   - Run the sample application to encode: `./SvtAv1EncApp -i [in.yuv] -w [width] -h [height] -b [out.ivf]`
-  - Sample application supports reading from pipe. E.g. `ffmpeg -i [input.mp4] -nostdin -f rawvideo -pix_fmt yuv420p - | ./SvtAv1EncApp -i stdin -n [number_of_frames_to_encode] -w [width] -h [height]`
+  - Sample application supports reading from pipe. E.g. `ffmpeg -i [in.mp4] -map 0:v:0 -pix_fmt yuv420p -f yuv4mpegpipe -strict -1 - | ./SvtAv1EncApp -i stdin -n [number_of_frames_to_encode] -b [out.ivf]`
 
 # SVT-AV1 ffmpeg plugin installation
 

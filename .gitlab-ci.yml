@@ -6,10 +6,13 @@ workflow:
     - when: always
 
 stages:
+  - check
   - compile
+  - standalone
+  - ffmpeg
   - test
-  - test-2
-  - test-3
+  - test-2 # Needed for weekend testing on aom-testing repo
+  - test-3 # Needed for weekend testing on aom-testing repo
 
 variables:
   CMAKE_GENERATOR: Ninja
@@ -19,7 +22,7 @@ default:
   interruptible: true
   retry: 2
   cache:
-    key: "$CI_COMMIT_REF_SLUG"
+    key: "$CI_JOB_NAME_SLUG"
     paths:
       - .ccache
     policy: pull-push
@@ -43,7 +46,7 @@ Style check:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: never
     - if: $NIGHTLY == null && $WEEKEND == null
-  stage: compile
+  stage: check
   image: registry.gitlab.com/aomediacodec/aom-testing/alpine3
   cache: []
   script:
@@ -54,7 +57,7 @@ Static analysis (cppcheck):
     - if: $NIGHTLY != null && $WEEKEND != null
       when: never
     - !reference [.source_code_rules]
-  stage: compile
+  stage: check
   image: registry.gitlab.com/aomediacodec/aom-testing/ubuntu1804
   cache:
     key: cppcheck

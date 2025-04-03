@@ -25,10 +25,10 @@ input parameters and the resulting outputs.
 The SVT-AV1 Encoder supports the following input formats:
 
 _8-bit yuv420p_\
-![8-bit yuv420p](img/8bit_yuv420p.png "8-bit yuv420p")
+![8-bit yuv420p](img/8bit_yuv420p.svg "8-bit yuv420p")
 
 _10-bit yuv420p10le_\
-![10-bit yuv420p10le](img/10bit_yuv420p.png "10-bit yuv420p10le")
+![10-bit yuv420p10le](img/10bit_yuv420p.svg "10-bit yuv420p10le")
 
 ### Compressed 10-bit format
 
@@ -46,7 +46,7 @@ as shown in the figure below. As a result of the operation, the 2 least
 significant bits of the 10 bits will be written into a full byte.
 
 _10-bit yuv420p10le unpacked_\
-![10-bit yuv420p10le unpacked](img/10bit_unpacked.png "10-bit yuv420p10le unpacked")
+![10-bit yuv420p10le unpacked](img/10bit_unpacked.svg "10-bit yuv420p10le unpacked")
 
 #### Compress the 2 bit Plane
 
@@ -57,21 +57,7 @@ compressed into one byte. As a result, each 10bit picture will be represented
 as two separate pictures as shown in the figure below.
 
 _10-bit yuv420p10le compressed_\
-![10-bit yuv420p10le compressed](img/10bit_packed.png "10-bit yuv420p10le compressed")
-
-#### Unroll the 64x64
-
-Now for a faster read of the samples, every 64x64 block of the 2 bit picture
-should be written into a one dimensional array. Therefore, the top left 64x64
-sample block which is now written into a 16 bytes x 64 bytes after the
-compression of the 2bit samples, will be written into a 1024 bytes x 1 byte
-array as shown in the picture below.
-
-_64x64 block after 2 bit compression_\
-![64x64 block after 2 bit compression](img/64x64_after_2bit_compression.png "64x64 block after 2 bit compression")
-
-_64x64 block after unrolling_\
-![64x64 block after unrolling](img/64x64_after_unrolling.png "64x64 block after unrolling")
+![10-bit yuv420p10le compressed](img/10bit_packed.svg "10-bit yuv420p10le compressed")
 
 ### Running the encoder
 
@@ -145,16 +131,6 @@ Here are some sample encode command lines
 
 #### 1 pass CRF at maximum speed from 24fps yuv 1920x1080 input
 `SvtAv1EncApp -i input.yuv -w 1920 -h 1080 --fps 24 --crf 30 --preset 12 -b output.ivf`
-
-#### Mutli-pass CRF at maximum quality from 24fps yuv 1920x1080 input
-Single command line :
-`SvtAv1EncApp -i input.yuv -w 1920 -h 1080 --fps 24 --crf 30 --preset 0 --passes 2 -b output.ivf`
-
-or
-
-Multiple command lines :
-`SvtAv1EncApp -i input.yuv -w 1920 -h 1080 --fps 24 --crf 30 --preset 0 --pass 1 --stats stat_file.stat`
-`SvtAv1EncApp -i input.yuv -w 1920 -h 1080 --fps 24 --crf 30 --preset 0 --pass 2 --stats stat_file.stat -b output.ivf `
 
 #### 1 pass VBR 1000 Kbps at medium speed from 24fps yuv 1920x1080 input
 `SvtAv1EncApp -i input.yuv -w 1920 -h 1080 --fps 24 --rc 1 --tbr 1000 --preset 5 -b output.ivf`

@@ -23,9 +23,9 @@
 
 #include "gtest/gtest.h"
 #include "aom_dsp_rtcd.h"
-#include "EbDefinitions.h"
-#include "EbUtility.h"
-#include "EbUnitTestUtility.h"
+#include "definitions.h"
+#include "utility.h"
+#include "unit_test_utility.h"
 #include "random.h"
 #include "util.h"
 
@@ -262,7 +262,7 @@ TEST_P(SsimHbdTest, MatchTestWithRandomValue) {
     run_random_test(test_times);
 }
 
-INSTANTIATE_TEST_CASE_P(SSIM, SsimLbdTest, ::testing::Values(8));
-INSTANTIATE_TEST_CASE_P(SSIM, SsimHbdTest, ::testing::Values(10));
+INSTANTIATE_TEST_SUITE_P(SSIM, SsimLbdTest, ::testing::Values(8));
+INSTANTIATE_TEST_SUITE_P(SSIM, SsimHbdTest, ::testing::Values(10));
 
 }  // namespace

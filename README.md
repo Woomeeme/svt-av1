@@ -1,11 +1,10 @@
-# Scalable Video Technology for AV1 (SVT-AV1 Encoder and Decoder)
+# Scalable Video Technology for AV1 (SVT-AV1 Encoder)
 
-The Scalable Video Technology for AV1 (SVT-AV1 Encoder and Decoder) is an
-AV1-compliant software encoder/decoder library. The work on the SVT-AV1 encoder
+The Scalable Video Technology for AV1 (SVT-AV1 Encoder) is an
+AV1-compliant software encoder library. The work on the SVT-AV1 encoder
 targets the development of a production-quality AV1-encoder with performance
 levels applicable to a wide range of applications, from premium VOD to
-real-time and live encoding/transcoding. The SVT-AV1 decoder implementation
-targets future codec research activities.
+real-time and live encoding/transcoding.
 
 The SVT-AV1 project was initially founded by Intel in partnership with Netflix,
 and was then [adopted](https://aomedia.org/press%20releases/aomedia-software-implementation-working-group-to-bring-av1-to-more-video-platforms/)
@@ -28,11 +27,13 @@ License 1.0. See [LICENSE](LICENSE.md) and [PATENTS](PATENTS.md) for details.
 - [System Requirements](Docs/System-Requirements.md)
 - [How to run SVT-AV1 within ffmpeg](Docs/Ffmpeg.md)
 - [Standalone Encoder Usage](Docs/svt-av1_encoder_user_guide.md)
-- [Decoder Usage](Docs/svt-av1_decoder_user_guide.md)
 - [List of All Parameters](Docs/Parameters.md)
 - [Build Guide](Docs/Build-Guide.md)
+- [ARM Build Guide](Docs/ARM-Build-Guide.md)
 
 **Common Questions/Issues**
+- [Why build with LTO?](Docs/CommonQuestions.md#why-build-with-lto)
+- [Why build with PGO?](Docs/CommonQuestions.md#why-build-with-pgo)
 - [What presets do](Docs/CommonQuestions.md#what-presets-do)
 - [Scene change detection](Docs/CommonQuestions.md#scene-change-detection)
 - [GOP size selection](Docs/CommonQuestions.md#gop-size-selection)
@@ -55,10 +56,12 @@ License 1.0. See [LICENSE](LICENSE.md) and [PATENTS](PATENTS.md) for details.
 - [SPIE 2020](https://www.spiedigitallibrary.org/conference-proceedings-of-spie/11510/1151021/The-SVT-AV1-encoder--overview-features-and-speed-quality/10.1117/12.2569270.full)
 - [SPIE 2021](https://www.spiedigitallibrary.org/conference-proceedings-of-spie/11842/118420T/Towards-much-better-SVT-AV1-quality-cycles-tradeoffs-for-VOD/10.1117/12.2595598.full)
 - [SVT-AV1 - Tech Blog 2022](https://networkbuilders.intel.com/blog/svt-av1-enables-highly-efficient-large-scale-video-on-demand-vod-services)
+- [SPIE 2022](https://www.spiedigitallibrary.org/conference-proceedings-of-spie/12226/122260S/Enhancing-SVT-AV1-with-LCEVC-to-improve-quality-cycles-trade/10.1117/12.2633882.full)
+- [Adaptive Steaming Common Test Conditions](https://aomedia.org/docs/SIWG-D001o.pdf)
+- [ICIP 2023](https://arxiv.org/abs/2307.05208)
 
 **Design Documents**
 - [Encoder Design](Docs/svt-av1-encoder-design.md)
-- [Decoder Design](Docs/svt-av1-decoder-design.md)
 
 **Technical Appendices**
 - [Adaptive Prediction Structure Appendix](Docs/Appendix-Adaptive-Prediction-Structure.md)
@@ -85,6 +88,7 @@ License 1.0. See [LICENSE](LICENSE.md) and [PATENTS](PATENTS.md) for details.
 - [Temporal Dependency Model](Docs/Appendix-TPL.md)
 - [Transform Search Appendix](Docs/Appendix-TX-Search.md)
 - [Reference Scaling Appendix](Docs/Appendix-Reference-Scaling.md)
+- [Variance Boost Appendix](Docs/Appendix-Variance-Boost.md)
 
 **How Can I Contribute?**
 - [SVT-AV1 Contribution Guide](Docs/Contribute.md)

@@ -1,3 +1,53 @@
+svt-av1 (2.3.0+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 2.3.0+dfsg
+
+ -- Dylan Aïssi <daissi@debian.org>  Fri, 13 Dec 2024 14:54:06 +0100
+
+svt-av1 (2.2.1+dfsg-2) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Dylan Aïssi <daissi@debian.org>  Tue, 24 Sep 2024 21:45:46 +0200
+
+svt-av1 (2.2.1+dfsg-1) experimental; urgency=medium
+
+  * New upstream version 2.2.1+dfsg
+  * Add symbols file
+
+ -- Dylan Aïssi <daissi@debian.org>  Sat, 31 Aug 2024 09:54:31 +0200
+
+svt-av1 (2.1.2+dfsg-1) experimental; urgency=medium
+
+  * New upstream version 2.1.2+dfsg
+  * Use nasm instead of yasm in Build-Deps
+  * Drop packaging for decoder, it was removed upstream.
+  * Update debian/copyright
+
+ -- Dylan Aïssi <daissi@debian.org>  Wed, 07 Aug 2024 10:50:03 +0200
+
+svt-av1 (2.1.0+dfsg-2) unstable; urgency=medium
+
+  * Upload to unstable
+
+ -- Dylan Aïssi <daissi@debian.org>  Mon, 08 Jul 2024 12:07:17 +0200
+
+svt-av1 (2.1.0+dfsg-1) experimental; urgency=medium
+
+  * New upstream version 2.1.0+dfsg
+  * Fix debian/watch
+  * Standards-Version: 4.7.0 (no changes needed)
+
+ -- Dylan Aïssi <daissi@debian.org>  Mon, 27 May 2024 16:04:41 +0200
+
+svt-av1 (2.0.0+dfsg-1) experimental; urgency=medium
+
+  * New upstream version 2.0.0+dfsg
+  * Bump SONAME to libsvtav1enc2 (Closes: #1059068)
+  * Update debian/copyright
+
+ -- Dylan Aïssi <daissi@debian.org>  Fri, 22 Mar 2024 21:38:05 +0100
+
 svt-av1 (1.7.0+dfsg-2) unstable; urgency=medium
 
   * Upload to unstable

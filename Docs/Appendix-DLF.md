@@ -34,7 +34,7 @@ edges. The main idea behind the filter can be summarized as follows:
 A block diagram illustrating the flow of the different steps involved in
 filtering is given in Figure 1 below.
 
-![dlf_fig1](./img/dlf_fig1.png)
+![dlf_fig1](./img/dlf_fig1.svg)
 
 ##### Figure 1. Steps in the loop filter decisions making process.
 
@@ -81,15 +81,18 @@ where
     segments.
   - Mode delta and reference delta are determined as follows:
     - Define ```scale = 1 << (((filter_level for the frame) + (segment
-      delta)) >>5 )```
-    - ```mode delta = mode_deltas * scale```, where ```mode_deltas``` is
-      obtained from Table 2.
-    - Reference delta = ```ref_deltas * scale```, where ```ref_deltas``` is
-      obtained from Table 3 below.
+      delta)) >> 5 )```
+    - ```mode delta = mode_deltas[mode_lf_lut[mode]] * scale```, where ```mode_deltas``` is
+      specified for each frame (default is 0), the mode is the prediction mode of the block,
+      and mode_lf_lut is obtained from Table 2.
+    - Reference delta = ```ref_deltas[ref_frame] * scale```, where ref_frame is the 0th ref frame, and
+      the ```ref_deltas```is specified for each from, with the default values obtained from Table 3 below.
 
-##### Table 2. Mode deltas for the loop filter level.
+Note that delta values are not enabled in SVT-AV1.
 
-| **Intra modes** | **mode\_deltas** | **Inter modes**    | **mode\_deltas** |
+##### Table 2. Mode deltas offset for the loop filter level.
+
+| **Intra modes** | **mode\_lf\_lut** | **Inter modes**    | **mode\_lf\_lut** |
 | --------------- | ---------------- | ------------------ | ---------------- |
 | DC\_PRED        | 0                | NEARESTMV          | 1                |
 | V\_PRED         | 0                | NEARMV             | 1                |
@@ -101,11 +104,11 @@ where
 | D203\_PRED      | 0                | NEW\_NEARESTMV     | 1                |
 | D67\_PRED       | 0                | NEAR\_NEWMV        | 1                |
 | SMOOTH\_PRED    | 0                | NEW\_NEARMV        | 1                |
-| SMOOTH\_V\_PRED | 0                | GLOBAL\_GLOBALMV   | 1                |
+| SMOOTH\_V\_PRED | 0                | GLOBAL\_GLOBALMV   | 0                |
 | SMOOTH\_H\_PRED | 0                | NEW\_NEWMV         | 1                |
 | PAETH\_PRED     | 0                |                    |                  |
 
-##### Table 3. Reference deltas for the loop filter level.
+##### Table 3. Default reference deltas for the loop filter level.
 
 | **Reference Picture** | **Default ref\_deltas** |
 | --------------------- | ----------------------- |
@@ -221,7 +224,7 @@ The steps involved in the filtering operation are as follows:
 
 The filtering decisions are outlined in the diagram shown in Figure 2 below.
 
-![dlf_fig2](./img/dlf_fig2.png)
+![dlf_fig2](./img/dlf_fig2.svg)
 
 ##### Figure 2. Flow of the loop filter decision making process.
 
@@ -230,7 +233,7 @@ operation are outlined below. Figure 3 below indicates the positions
 of the samples across the horizontal edge to be filtered, with similar
 arrangement of the samples for the case of a vertical edge.
 
-![dlf_fig3](./img/dlf_fig3.png)
+![dlf_fig3](./img/dlf_fig3.svg)
 
 ##### Figure 3. Sample positions across the horizontal edge to be filtered.
 
@@ -305,7 +308,7 @@ filter14)
 | DlfCtrls                | Picture       | Describes the Dlf control signal.                                                                                                                                                                                                                                                                       |
 | combine\_vert\_horz\_lf | Picture       | When set, it implies performing filtering of vertical edges in the current SB followed by filtering of horizontal edges in the preceding SB in the same SB row. When OFF, it implies performing filtering of vertical edges in the current SB followed by filtering of horizontal edges in the same SB. |
 
-![dlf_new_fig4](./img/dlf_new_fig4.png)
+![dlf_new_fig4](./img/dlf_new_fig4.svg)
 
 ##### Figure 4. High-level encoder process dataflow with DLF feature.
 
@@ -410,7 +413,7 @@ The function calls that start at ```svt_av1_loop_filter_frame``` are
 indicated in Figure 5 below according to the depth of the function
 call.
 
-![dlf_fig4](./img/dlf_fig4.png)
+![dlf_fig4](./img/dlf_fig4.svg)
 
 ##### Figure 5. Function calls starting at eb\_av1\_loop\_filter\_frame.
 
@@ -474,7 +477,7 @@ indicated in the Table above.
 ## 3. Optimization of the algorithm
 
 The algorithmic optimization of the loop filter is performed by considering different loop filter search methods. If LPF_PICK_FROM_Q is chosen as the search
-method, the filter levels are determined using the picture qindex, however is LPF_PICK_FROM_FULL_IMAGE is selected, a binary search is performed to find the
+method, the filter levels are determined using the picture qindex; however if LPF_PICK_FROM_FULL_IMAGE is selected, a binary search is performed to find the
 best filter levels. Table 5 shows the DLF control signals and their descriptions. The encoder mode and the picture being used as a reference are used to
 determine the search method.
 
@@ -484,6 +487,10 @@ determine the search method.
 | --- | --- |
 | enabled | 0/1: Enable/Disable DLF |
 | sb_based_dlf | 0: perform picture-based DLF with LPF_PICK_FROM_FULL_IMAGE search method 1: perform DLF per SB using LPF_PICK_FROM_Q method |
+| dlf_avg | Start search from average DLF instead of 0 |
+| dlf_avg_uv | Use average DLF as a starting point for qp based filter strength selection for Chroma planes |
+| early_exit_convergence | Number of convergence points before exiting the filter search, 1 = exit on first convergence point, 2 = exit on second, 0 = off |
+| zero_filter_strength_lvl | Threshold used when sb_based_dlf is used to use filter strength zero, there are four levels of thresholds [0..3], 0 = off |
 
 ## 4. Signaling
 
@@ -505,7 +512,7 @@ seen in Table 6.
 ## Notes
 
 The feature settings that are described in this document were compiled at
-v1.7.0 of the code and may not reflect the current status of the code. The
+v2.2.0 of the code and may not reflect the current status of the code. The
 description in this document represents an example showing how features would
 interact with the SVT architecture. For the most up-to-date settings, it's
 recommended to review the section of the code implementing this feature.

@@ -18,13 +18,14 @@
  * @author Cidana-Edmond Cidana-Ryan Cidana-Wenyao
  *
  ******************************************************************************/
+#include <algorithm>
 
 #include "EbSvtAv1Enc.h"
 #include "Y4mVideoSource.h"
 #include "YuvVideoSource.h"
 #include "DummyVideoSource.h"
 #include "gtest/gtest.h"
-#include "EbDefinitions.h"
+#include "definitions.h"
 #include "RefDecoder.h"
 #include "SvtAv1E2EFramework.h"
 #include "CompareTools.h"
@@ -504,7 +505,7 @@ void SvtAv1E2ETestFramework::run_encode_process() {
             // try to get one encoded frame, flush the encoder
             // if src_file_eos is true
             do {
-                // non-blocking call
+                // non-blocking call if not using low-delay
                 EbBufferHeaderType *enc_out = nullptr;
                 {
                     TimeAutoCount counter(ENCODING, collect_);

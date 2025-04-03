@@ -69,9 +69,9 @@ TEST_P(CrashDeathTest, NotCrashTest) {
     run_death_test();
 }
 
-INSTANTIATE_TEST_CASE_P(SvtAv1, CrashDeathTest,
-                        ::testing::ValuesIn(generate_enc_mode_settings()),
-                        EncTestSetting::GetSettingName);
+INSTANTIATE_TEST_SUITE_P(SvtAv1, CrashDeathTest,
+                         ::testing::ValuesIn(generate_enc_mode_settings()),
+                         EncTestSetting::GetSettingName);
 
 /**
  * @brief SVT-AV1 encoder E2E test with comparing the reconstructed frame with
@@ -147,7 +147,6 @@ static const std::vector<EncTestSetting> default_enc_settings = {
     {"ConstrainIntraTest1", {{"ConstrainedIntra", "1"}}, default_test_vectors},
 
     // test rate control modes, default is 0, 1 and 2 is supported
-    {"RateControlTest1", {{"RateControlMode", "2"}}, default_test_vectors},
     {"RateControlTest2", {{"RateControlMode", "1"}}, default_test_vectors},
 
     // test scene change detection, default is 1
@@ -169,16 +168,8 @@ static const std::vector<EncTestSetting> default_enc_settings = {
     {"TileTest2", {{"TileCol", "1"}}, default_test_vectors},
     {"TileTest3", {{"TileCol", "1"}, {"TileRow", "1"}}, default_test_vectors},
 
-    // Validate by setting a low bitrate and MaxQpAllowed, push the encoder to producing
-    // large partitions.
-    {"IncompleteSbTest1",
-     {{"RateControlMode", "2"}, {"TargetBitRate", "100000"}, {"MaxQpAllowed", "40"}},
-     parkjoy},
     // Validate by setting a high bitrate and MinQpAllowed, push the encoder to producing
     // small partitions.
-    {"IncompleteSbTest2",
-     {{"RateControlMode", "2"}, {"TargetBitRate", "1000000"}, {"MinQpAllowed", "10"}},
-     parkjoy},
 
     // test pallete mode
     {"PaletteModeTest1",
@@ -235,10 +226,6 @@ static const std::vector<EncTestSetting> default_enc_settings = {
     // reference scaling tests with loop restoration
     { "RefScalingTest7", {{"ResizeMode", "2"}, {"EnableRestoration", "1"}, {"EncoderMode", "8"}}, default_test_vectors },
     // reference scaling tests for dynamic mode
-    { "RefScalingTest8", {{"ResizeMode", "3"}, {"RateControlMode", "2"}, {"PredStructure", "1"}, {"TargetBitRate", "100"}, {"EncoderMode", "8"}}, default_long_test_vectors },
-    { "RefScalingTest9", {{"ResizeMode", "3"}, {"RateControlMode", "2"}, {"PredStructure", "1"}, {"TargetBitRate", "50"}, {"EncoderMode", "8"}}, default_long_test_vectors },
-    { "RefScalingTest10", {{"ResizeMode", "3"}, {"RateControlMode", "2"}, {"PredStructure", "1"}, {"TargetBitRate", "20"}, {"EncoderMode", "8"}}, default_long_test_vectors },
-    { "RefScalingTest11", {{"ResizeMode", "3"}, {"RateControlMode", "2"}, {"PredStructure", "1"}, {"TargetBitRate", "15"}, {"EncoderMode", "8"}}, default_long_test_vectors },
 
     // reference scaling tests with super resolution
     { "SuperResRefScalingTest0", {{"SuperresMode", "2"}, {"ResizeMode", "2"}, {"EncoderMode", "8"}}, default_test_vectors },
@@ -343,9 +330,9 @@ static const std::vector<EncTestSetting> sframe_settings = {
 };
 
 /* clang-format on */
-INSTANTIATE_TEST_CASE_P(SvtAv1, ConformanceDeathTest,
-                        ::testing::ValuesIn(default_enc_settings),
-                        EncTestSetting::GetSettingName);
+INSTANTIATE_TEST_SUITE_P(SvtAv1, ConformanceDeathTest,
+                         ::testing::ValuesIn(default_enc_settings),
+                         EncTestSetting::GetSettingName);
 
 /**
  * @brief SVT-AV1 encoder E2E test with comparing the reconstructed frame with
@@ -370,9 +357,9 @@ TEST_P(OverlayPresetConformanceTest, DISABLED_OverlayPresetTest) {
     run_death_test();
 }
 
-INSTANTIATE_TEST_CASE_P(SvtAv1, OverlayPresetConformanceTest,
-                        ::testing::ValuesIn(overlay_preset_settings),
-                        EncTestSetting::GetSettingName);
+INSTANTIATE_TEST_SUITE_P(SvtAv1, OverlayPresetConformanceTest,
+                         ::testing::ValuesIn(overlay_preset_settings),
+                         EncTestSetting::GetSettingName);
 
 /**
  * @brief SVT-AV1 encoder E2E test with comparing the reconstructed frame with
@@ -397,9 +384,9 @@ TEST_P(SuperResPresetConformanceTest, DISABLED_SupreResPresetTest) {
     run_death_test();
 }
 
-INSTANTIATE_TEST_CASE_P(SvtAv1, SuperResPresetConformanceTest,
-                        ::testing::ValuesIn(superres_preset_settings),
-                        EncTestSetting::GetSettingName);
+INSTANTIATE_TEST_SUITE_P(SvtAv1, SuperResPresetConformanceTest,
+                         ::testing::ValuesIn(superres_preset_settings),
+                         EncTestSetting::GetSettingName);
 
 class SwitchFrameConformanceTest : public ConformanceDeathTest {};
 
@@ -407,9 +394,9 @@ TEST_P(SwitchFrameConformanceTest, DISABLED_SwitchFrameTest) {
     run_death_test();
 }
 
-INSTANTIATE_TEST_CASE_P(SvtAv1, SwitchFrameConformanceTest,
-                        ::testing::ValuesIn(sframe_settings),
-                        EncTestSetting::GetSettingName);
+INSTANTIATE_TEST_SUITE_P(SvtAv1, SwitchFrameConformanceTest,
+                         ::testing::ValuesIn(sframe_settings),
+                         EncTestSetting::GetSettingName);
 
 class LongtimeConformanceTest : public ConformanceDeathTest {};
 
@@ -417,10 +404,10 @@ TEST_P(LongtimeConformanceTest, DISABLED_LongtimeTest) {
     run_death_test();
 }
 
-INSTANTIATE_TEST_CASE_P(SvtAv1, LongtimeConformanceTest,
-                        ::testing::ValuesIn(generate_vector_from_config(
-                            "longtime_comformance_test.cfg")),
-                        EncTestSetting::GetSettingName);
+INSTANTIATE_TEST_SUITE_P(SvtAv1, LongtimeConformanceTest,
+                         ::testing::ValuesIn(generate_vector_from_config(
+                             "longtime_comformance_test.cfg")),
+                         EncTestSetting::GetSettingName);
 /**
  * @brief SVT-AV1 encoder E2E test with comparing the reconstructed frame with
  * output frame from decoder buffer list when the tile is inverted to prove
@@ -461,9 +448,9 @@ static const std::vector<EncTestSetting> tile_settings = {
     {"TileTest3", {{"TileCol", "1"}, {"TileRow", "0"}}, default_test_vectors},
     {"TileTest4", {{"TileCol", "1"}, {"TileRow", "1"}}, default_test_vectors}};
 
-INSTANTIATE_TEST_CASE_P(TILETEST, TileIndependenceTest,
-                        ::testing::ValuesIn(tile_settings),
-                        EncTestSetting::GetSettingName);
+INSTANTIATE_TEST_SUITE_P(TILETEST, TileIndependenceTest,
+                         ::testing::ValuesIn(tile_settings),
+                         EncTestSetting::GetSettingName);
 
 /**
  * @brief SVT-AV1 encoder E2E test with comparing the reconstructed frame with
@@ -536,9 +523,9 @@ static const std::vector<EncTestSetting> generate_super_res_settings() {
     return settings;
 }
 
-INSTANTIATE_TEST_CASE_P(SUPERRESTEST, SuperResTest,
-                        ::testing::ValuesIn(generate_super_res_settings()),
-                        EncTestSetting::GetSettingName);
+INSTANTIATE_TEST_SUITE_P(SUPERRESTEST, SuperResTest,
+                         ::testing::ValuesIn(generate_super_res_settings()),
+                         EncTestSetting::GetSettingName);
 
 typedef std::tuple<int, int> SuperresQThresholdPair;
 
@@ -575,7 +562,7 @@ generate_super_res_q_threshold_settings() {
     return settings;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SUPERRESQTHRESTEST, SuperResTest,
     ::testing::ValuesIn(generate_super_res_q_threshold_settings()),
     EncTestSetting::GetSettingName);
@@ -620,9 +607,9 @@ static const std::vector<EncTestSetting> generate_ref_scaling_settings() {
 return settings;
 }
 
-INSTANTIATE_TEST_CASE_P(REFSCALINGTEST, SuperResTest,
-                        ::testing::ValuesIn(generate_ref_scaling_settings()),
-                        EncTestSetting::GetSettingName);
+INSTANTIATE_TEST_SUITE_P(REFSCALINGTEST, SuperResTest,
+                         ::testing::ValuesIn(generate_ref_scaling_settings()),
+                         EncTestSetting::GetSettingName);
 
 // Test cases of super resolution combine with reference scaling in fixed mode
 static const std::vector<EncTestSetting>
@@ -651,7 +638,7 @@ generate_superres_ref_scaling_settings() {
     return settings;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SUPERRESREFSCALINGTEST, SuperResTest,
     ::testing::ValuesIn(generate_superres_ref_scaling_settings()),
     EncTestSetting::GetSettingName);
@@ -677,10 +664,6 @@ generate_ref_scaling_random_access_settings() {
         // VBR
         {{"ResizeMode", "4"},
          {"RateControlMode", "1"},
-         {"TargetBitRate", "1000"}},
-        // CBR
-        {{"ResizeMode", "4"},
-         {"RateControlMode", "2"},
          {"TargetBitRate", "1000"}}};
     std::vector<TestFrameEvent> event_vec;
     uint32_t frame_count = 10;
@@ -702,7 +685,7 @@ generate_ref_scaling_random_access_settings() {
     return settings;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     REFSCALINGRANDOMACCESSTEST, SuperResTest,
     ::testing::ValuesIn(generate_ref_scaling_random_access_settings()),
     EncTestSetting::GetSettingName);
@@ -774,7 +757,7 @@ static const std::vector<EncTestSetting> generate_testcase_with_preset_settings(
  * Test coverage:
  * All test vectors of 640*480, default disabled */
 static const std::vector<std::string> resize_mode = {"2"};
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     REFSCALINGTEST, FeaturePresetConformanceTest,
     ::testing::ValuesIn(generate_testcase_with_preset_settings("RefScaling",
                                                                "ResizeMode",
@@ -827,6 +810,6 @@ static const std::vector<EncTestSetting> generate_aq_mode_1_settings() {
     return settings;
 }
 
-INSTANTIATE_TEST_CASE_P(SEGMENTTEST, SegmentTest,
-                        ::testing::ValuesIn(generate_aq_mode_1_settings()),
-                        EncTestSetting::GetSettingName);
+INSTANTIATE_TEST_SUITE_P(SEGMENTTEST, SegmentTest,
+                         ::testing::ValuesIn(generate_aq_mode_1_settings()),
+                         EncTestSetting::GetSettingName);

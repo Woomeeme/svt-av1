@@ -34,8 +34,10 @@
 extern "C" {
 #endif // __cplusplus
 
+#define CLN_LP_LVLS             1 // Change --lp input to represent the levels of parallelization that are actually implemented in the code
+
 //FOR DEBUGGING - Do not remove
-#define OPT_LD_LATENCY2         0 // Latency optimization for low delay
+#define OPT_LD_LATENCY2         1 // Latency optimization for low delay - to keep the Macro for backwards testing until 3.0
 #define LOG_ENC_DONE            0 // log encoder job one
 #define NO_ENCDEC               0 // bypass encDec to test cmpliance of MD. complained achieved when skip_flag is OFF. Port sample code from VCI-SW_AV1_Candidate1 branch
 #define DEBUG_TPL               0 // Prints to debug TPL
@@ -52,6 +54,9 @@ extern "C" {
 #define REMOVE_LP1_LPN_DIFF     1 // Disallow single-thread/multi-thread differences
 #else
 #define REMOVE_LP1_LPN_DIFF     0 // Disallow single-thread/multi-thread differences
+#define FTR_KF_ON_FLY_SAMPLE      0 // Sample code to signal KF
+#define FTR_RES_ON_FLY_SAMPLE     0 // Sample functions to change the resolution on the fly
+#define FTR_RATE_ON_FLY_SAMPLE    0 // Sample functions to change bit rate
 #endif
 // Super-resolution debugging code
 #define DEBUG_SCALING           0
@@ -63,6 +68,12 @@ extern "C" {
 
 // Switch frame debugging code
 #define DEBUG_SFRAME            0
+
+// Variance boost debugging code
+#define DEBUG_VAR_BOOST         0
+#define DEBUG_VAR_BOOST_QP      0
+#define DEBUG_VAR_BOOST_STATS   0
+
 // Quantization matrices
 #define DEBUG_QM_LEVEL          0
 #define DEBUG_STARTUP_MG_SIZE   0

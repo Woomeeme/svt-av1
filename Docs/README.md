@@ -6,7 +6,6 @@
 - [System Requirements](System-Requirements.md)
 - [How to run SVT-AV1 within ffmpeg](Ffmpeg.md)
 - [Standalone Encoder Usage](svt-av1_encoder_user_guide.md)
-- [Decoder Usage](svt-av1_decoder_user_guide.md)
 - [List of All Parameters](Parameters.md)
 - [Build Guide](Build-Guide.md)
 - [SVT-AV1 Contribution Guide](Contribute.md)
@@ -14,10 +13,8 @@
 
 ## Design Documents
 - [Encoder Design](svt-av1-encoder-design.md)
-- [Decoder Design](svt-av1-decoder-design.md)
 
 ## Technical Appendices
-- [Adaptive Prediction Structure Appendix](Appendix-Adaptive-Prediction-Structure.md)
 - [Altref and Overlay Pictures Appendix](Appendix-Alt-Refs.md)
 - [CDEF Appendix](Appendix-CDEF.md)
 - [CfL Appendix](Appendix-CfL.md)
@@ -41,3 +38,4 @@
 - [Temporal Dependency Model](Appendix-TPL.md)
 - [Transform Search Appendix](Appendix-TX-Search.md)
 - [Reference Scaling Appendix](Appendix-Reference-Scaling.md)
+- [Variance Boost Appendix](Appendix-Variance-Boost.md)

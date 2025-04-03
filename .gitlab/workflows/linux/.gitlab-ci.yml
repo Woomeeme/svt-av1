@@ -81,10 +81,10 @@ Linux (Alpine, musl):
     expire_in: 30 days
     paths:
       - musl/SvtAv1EncApp
-      - musl/SvtAv1DecApp
 
 Linux (Clang):
   extends: .linux-compiler-base
+  stage: standalone
   parallel:
     matrix:
       - CC: clang-6.0
@@ -94,10 +94,12 @@ Linux (Clang):
 
 Linux (GCC 4):
   extends: .linux-compiler-base
+  stage: standalone
   image: registry.gitlab.com/aomediacodec/aom-testing/centos7
 
 Linux (GCC):
   extends: .linux-compiler-base
+  stage: standalone
   parallel:
     matrix:
       - CC: gcc-7
@@ -106,22 +108,17 @@ Linux (GCC):
         CXX: g++-8
       - CC: gcc-9
         CXX: g++-9
-      - CC: gcc-11
-        CXX: g++-11
-        EXTRA_CMAKE_FLAGS: -DENABLE_AVX512=ON
       - CC: aarch64-linux-gnu-gcc
         CXX: aarch64-linux-gnu-g++
-        EXTRA_CMAKE_FLAGS: -DCMAKE_TOOLCHAIN_FILE=$CI_PROJECT_DIR/aarch64-linux-gnu.cmake
+        EXTRA_CMAKE_FLAGS: --toolchain $CI_PROJECT_DIR/cmake/toolchains/aarch64_toolchain.cmake
       - CC: powerpc64le-linux-gnu-gcc
         CXX: powerpc64le-linux-gnu-g++
-        EXTRA_CMAKE_FLAGS: -DCMAKE_TOOLCHAIN_FILE=$CI_PROJECT_DIR/powerpc64le-linux-gnu.cmake -DCROSS=powerpc64le-linux-gnu-
+        EXTRA_CMAKE_FLAGS: --toolchain $CI_PROJECT_DIR/powerpc64le-linux-gnu.cmake -DCROSS=powerpc64le-linux-gnu-
+      - CMAKE_SYSTEM_NAME: Android
+        EXTRA_CMAKE_FLAGS: --toolchain $CI_PROJECT_DIR/cmake/toolchains/android_aarch64_toolchain.cmake
   before_script:
     - |
       case $CC in
-      aarch64-linux-gnu-gcc)
-        curl -Ls "https://aomedia.googlesource.com/aom/+/refs/heads/main/build/cmake/toolchains/arm64-linux-gcc.cmake?format=TEXT" |
-          base64 -d > aarch64-linux-gnu.cmake
-        ;;
       powerpc64le-linux-gnu-gcc)
         curl -Ls "https://aomedia.googlesource.com/aom/+/refs/heads/main/build/cmake/toolchains/ppc-linux-gcc.cmake?format=TEXT" |
           base64 -d > powerpc64le-linux-gnu.cmake
@@ -143,7 +140,6 @@ Linux (GCC 11, Static):
     expire_in: 30 days
     paths:
       - Bin/*/SvtAv1EncApp
-      - Bin/*/SvtAv1DecApp
 
 Linux (GCC 11, Tests, Static):
   extends: .linux-compiler-base
@@ -180,7 +176,6 @@ Linux (GCC 11, Default, Static):
     expire_in: 30 days
     paths:
       - Bin/*/SvtAv1EncApp
-      - Bin/*/SvtAv1DecApp
 
 Linux Sanitizer Compile:
   extends: .linux-compiler-base
@@ -253,10 +248,10 @@ Linux Unit Tests:
   extends: .linux-unit-test-base
   variables:
     SVT_AV1_TEST_VECTOR_PATH: $CI_PROJECT_DIR/test/vectors
-    TOTAL_SHARDS: 20
+    TOTAL_SHARDS: 16
   parallel:
     matrix:
-      - SHARD_INDEX: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+      - SHARD_INDEX: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
   cache:
     key: testvectors
     paths:
@@ -286,7 +281,7 @@ Linux RC Test:
           ./Bin/Release/SvtAv1EncApp \
             --preset 8 --lp 7 \
             --rc 1 --tbr "$target" \
-            -i "$clip" \
+            -n 300 -i "$clip" \
             --undershoot-pct 10 \
             --overshoot-pct 5 2>&1 |
             awk '$1" "$2 == "Total Frames" {getline; print $5}'
@@ -331,16 +326,6 @@ Linux Intra Enc Test:
         ./Bin/Release/SvtAv1EncApp --preset 2 --keyint $INTRA_PERIOD -i "$SVT_ENCTEST_FILENAME" -n 17 -b "test-${BRANCH:-pr}-$(uname)-intra${INTRA_PERIOD}-${SVT_ENCTEST_BITNESS}bit-m2.ivf"
         ./Bin/Release/SvtAv1EncApp --preset 8 --keyint $INTRA_PERIOD -i "$SVT_ENCTEST_FILENAME" -n 120 -b "test-${BRANCH:-pr}-$(uname)-intra${INTRA_PERIOD}-${SVT_ENCTEST_BITNESS}bit-m8.ivf"
       done
-
-Linux Passes vs Passes Test:
-  extends: .linux-enc-test-base
-  script:
-    - ./Bin/Release/SvtAv1EncApp --preset 2 --passes 2 --irefresh-type 2 --keyint -1 -i "$SVT_ENCTEST_FILENAME" -n 17 -b "test-${BRANCH:-pr}-$(uname)-passes=2-${SVT_ENCTEST_BITNESS}bit-m2.ivf"
-    - ./Bin/Release/SvtAv1EncApp --preset 8 --passes 2 --irefresh-type 2 --keyint -1 -i "$SVT_ENCTEST_FILENAME" -n 120 -b "test-${BRANCH:-pr}-$(uname)-passes=2-${SVT_ENCTEST_BITNESS}bit-m8.ivf"
-    - ./Bin/Release/SvtAv1EncApp --preset 2 --pass 1 --irefresh-type 2 --keyint -1 -i "$SVT_ENCTEST_FILENAME" -n 17 --stats "test-${BRANCH:-pr}-$(uname)-pass=2-${SVT_ENCTEST_BITNESS}bit-m2.stat"
-    - ./Bin/Release/SvtAv1EncApp --preset 2 --pass 2 --irefresh-type 2 --keyint -1 -i "$SVT_ENCTEST_FILENAME" -n 17 --stats "test-${BRANCH:-pr}-$(uname)-pass=2-${SVT_ENCTEST_BITNESS}bit-m2.stat" -b "test-${BRANCH:-pr}-$(uname)-pass=2-${SVT_ENCTEST_BITNESS}bit-m2.ivf"
-    - ./Bin/Release/SvtAv1EncApp --preset 8 --pass 1 --irefresh-type 2 --keyint -1 -i "$SVT_ENCTEST_FILENAME" -n 120 --stats "test-${BRANCH:-pr}-$(uname)-pass=2-${SVT_ENCTEST_BITNESS}bit-m8.stat"
-    - ./Bin/Release/SvtAv1EncApp --preset 8 --pass 2 --irefresh-type 2 --keyint -1 -i "$SVT_ENCTEST_FILENAME" -n 120 --stats "test-${BRANCH:-pr}-$(uname)-pass=2-${SVT_ENCTEST_BITNESS}bit-m8.stat" -b "test-${BRANCH:-pr}-$(uname)-pass=2-${SVT_ENCTEST_BITNESS}bit-m8.ivf"
 
 Linux Multiple Channels Test:
   extends: .linux-enc-test-base
@@ -409,7 +394,7 @@ Enc Intra Diff Test:
 
 Linux Gstreamer (Static):
   extends: .linux-test-base
-  stage: compile
+  stage: standalone
   variables:
     CC: gcc-11
     CXX: g++-11
@@ -420,7 +405,7 @@ Linux Gstreamer (Static):
     PKG_CONFIG_PATH: /usr/local/lib/pkgconfig
     GIT_DEPTH: 0
   script:
-    - cmake -B Build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_APPS=OFF -DBUILD_DEC=OFF -DREPRODUCIBLE_BUILDS=ON
+    - cmake -B Build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_APPS=OFF -DREPRODUCIBLE_BUILDS=ON
     - cmake --build Build --config Release --target install
     - meson setup -Dprefix=/usr --buildtype release gstreamer-plugin/build gstreamer-plugin
     - meson install -C gstreamer-plugin/build
@@ -433,7 +418,7 @@ Linux Gstreamer (Static):
 
 Linux libavif (Static):
   extends: .linux-test-base
-  stage: compile
+  stage: standalone
   variables:
     CC: gcc-11
     CXX: g++-11
@@ -459,16 +444,17 @@ Linux libavif (Static):
       -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE"
       -DBUILD_SHARED_LIBS="$BUILD_SHARED_LIBS"
       -DCMAKE_INSTALL_PREFIX="$PREFIX_DIR"
-      -DAVIF_CODEC_DAV1D=ON
-      -DAVIF_CODEC_SVT=ON
+      -DAVIF_CODEC_DAV1D=SYSTEM
+      -DAVIF_CODEC_SVT=SYSTEM
       -DAVIF_BUILD_EXAMPLES=ON
       -DAVIF_BUILD_APPS=ON
+      -DAVIF_LIBYUV=OFF #Remove this token once upgraded to Ubuntu 22
     - cmake --build libavif-build --config Release --target install
     - valgrind --error-exitcode=1 --track-origins=yes --suppressions=/usr/lib/valgrind/debian.supp -- avifenc -c svt -d 8 -y 420 -r limited -j 2 ./Docs/img/me_fig_new.png out.avif
 
-Linux FFmpeg (Static):
+Linux FFmpeg (n7.0.2, Static):
   extends: .linux-test-base
-  stage: compile
+  stage: ffmpeg
   variables:
     CC: gcc-11
     CXX: g++-11
@@ -476,9 +462,11 @@ Linux FFmpeg (Static):
     CXXFLAGS: -pipe
     LDFLAGS: -pipe -static -static-libgcc -static-libstdc++
     GIT_DEPTH: 0
+    CMAKE_BUILD_TYPE: Debug
   before_script:
     - !reference [.ffmpeg-before-script-git-setup]
     - !reference [.ffmpeg-before-script-clone]
+    - git -C ffmpeg-src checkout n7.0.2
     - !reference [.ffmpeg-before-script-export]
   script:
     - !reference [.ffmpeg-svtav1-script]
@@ -508,7 +496,7 @@ Linux FFmpeg (Static):
 
 Linux FFmpeg (n5.0, Static):
   extends: .linux-test-base
-  stage: compile
+  stage: ffmpeg
   variables:
     CC: gcc-11
     CXX: g++-11
@@ -539,28 +527,6 @@ Linux FFmpeg (n5.0, Static):
     expire_in: 30 days
     paths:
       - ffmpeg
-
-Decoder Test:
-  extends: .linux-test-base
-  stage: .post
-  # parallel:
-  #   matrix:
-  #     - threads: [1, 2]
-  before_script:
-    - "true"
-  script:
-    - ./Bin/Release/SvtAv1DecApp ${threads:+-threads $threads} -i test-pr-Linux-Release-8bit-m8.ivf -o decout8.yuv
-    - ./ffmpeg -i test-pr-Linux-Release-8bit-m8.ivf ffmpegout8.yuv
-    - echo Testing 8bit decoding
-    - diff decout8.yuv ffmpegout8.yuv
-    - ./Bin/Release/SvtAv1DecApp ${threads:+-threads $threads} -i test-pr-Linux-Release-10bit-m8.ivf -o decout10.yuv
-    - ./ffmpeg -i test-pr-Linux-Release-10bit-m8.ivf ffmpegout10.yuv
-    - echo Testing 10bit decoding
-    - diff decout10.yuv ffmpegout10.yuv
-  needs:
-    - Linux Enc Test
-    - Linux (GCC 11, Static)
-    - Linux FFmpeg (Static)
 
 Linux Startup MG Test:
   extends: .linux-test-base

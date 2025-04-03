@@ -1,2 +1,3 @@
+usr/include
 usr/lib/*/pkgconfig/SvtAv1Enc.pc
 usr/lib/*/libSvtAv1Enc.so
